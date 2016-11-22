@@ -43,7 +43,8 @@ public class MyClusterer {
             eval = new ClusterEvaluation();
             eval.setClusterer(clusterer);
             eval.evaluateClusterer(dataSet);
-            System.out.println("Cluster Evaluation: "+eval.clusterResultsToString());
+            System.out.println("Cluster Evaluation:");
+            System.out.println(eval.clusterResultsToString());
             
             //Given test set 
         } catch (Exception ex) {

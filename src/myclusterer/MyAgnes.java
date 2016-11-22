@@ -24,42 +24,36 @@ import weka.core.Instances;
 public class MyAgnes extends AbstractClusterer implements NumberOfClustersRequestable {
     
     public class Cluster {
-        final private List<Integer> members;
-        private Cluster left, right;
+        final private List<Integer> members;        
         
         public Cluster() {
-            members = new ArrayList<>();
-            left = right = null;
-        }        
-        public Cluster(Cluster left, Cluster right) {
-            this.left = left;
-            this.right = right;
-            members = new ArrayList<>();
-            members.addAll(left.members);
-            members.addAll(right.members);
-        }
+            members = new ArrayList<>();            
+        }                
         public Cluster(Integer member) {
             members = new ArrayList<>();
-            members.add(member);
-            left = right = null;
-        }
-        public Cluster(List<Integer> members) {
-            this.members = new ArrayList<>(members);
-        }
-        public Cluster(Cluster other) {
-            this.members = new ArrayList<>(other.members);
+            members.add(member);            
+        }        
+        public Cluster(Cluster other1, Cluster other2) {
+            this.members = new ArrayList<>(other1.members);
+            this.members.addAll(other2.members);
         }        
         public void add(Integer member) { members.add(member); }
-        public void add(Cluster other) { members.addAll(other.members); }        
-        
-        public Cluster getLeft() { return this.left; }
-        public void setLeft(Cluster left) { this.left = left; }
-        
-        public Cluster getRight() { return this.right; }
-        public void setRight(Cluster right) { this.right = right; }
+        public void add(Cluster other) { members.addAll(other.members); }                        
         
         public int size() { return members.size(); }
         public Integer get(int index) { return members.get(index); }
+        
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("[");
+            for (int i = 0; i < members.size(); ++i) {
+                if (i > 0) sb.append(", ");
+                sb.append(String.valueOf(members.get(i)));
+            }
+            sb.append("]");
+            return sb.toString();
+        }
     }       
     
     public enum Linkage {
@@ -68,9 +62,10 @@ public class MyAgnes extends AbstractClusterer implements NumberOfClustersReques
     
     protected Instances instances;
     protected List<Cluster> clusters;
+    protected List<List<Cluster>> hierarchy;
     protected DistanceFunction distanceFunction = new EuclideanDistance();
     protected Linkage linkage = Linkage.SINGLE;
-    protected int K = 2;
+    protected int K = 3;
        
     @Override
     public void buildClusterer(Instances instances) throws Exception {
@@ -119,14 +114,14 @@ public class MyAgnes extends AbstractClusterer implements NumberOfClustersReques
         int n = instances.numInstances();
         
         clusters = new ArrayList<>();
+        hierarchy = new ArrayList<>();
         for (int i = 0; i < n; ++i) {
             Cluster cluster = new Cluster(i);
             clusters.add(cluster);
         }
-        
-        int iterations = 0;
-        while (clusters.size() > K) {
-            ++iterations;
+        hierarchy.add(new ArrayList(clusters));
+                
+        while (clusters.size() > K) {            
             double min = Double.MAX_VALUE;
             int firstIdx = -1, secondIdx = -1;
             for (int i = 0; i < clusters.size()-1; ++i) {
@@ -147,6 +142,8 @@ public class MyAgnes extends AbstractClusterer implements NumberOfClustersReques
             Cluster parent = new Cluster(left, right);            
             clusters.set(firstIdx, parent);
             clusters.remove(secondIdx);
+            
+            hierarchy.add(new ArrayList(clusters));
         }                   
     }
     
@@ -181,6 +178,30 @@ public class MyAgnes extends AbstractClusterer implements NumberOfClustersReques
             }                       
         }        
         return idx;
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();        
+        
+        sb.append("=== Cluster Hierarchy ===\n");
+        for (int i = 0; i < hierarchy.size(); ++i) {
+            sb.append("Iteration ").append(String.valueOf(i)).append(":\n");
+            for (Cluster cluster: hierarchy.get(i)) sb.append(cluster.toString());
+            sb.append("\n\n");
+        }
+        
+        sb.append("=== Cluster Members ===\n");
+        for (int i = 0; i < clusters.size(); ++i) {
+            Cluster cluster = clusters.get(i);
+            if (i > 0) sb.append("\n\n");
+            sb.append("Cluster ").append(String.valueOf(i));
+            sb.append(": (").append(String.valueOf(cluster.size())).append(" members)\n");
+            sb.append(cluster.toString());
+        }
+        sb.append("\n\n");
+        
+        return sb.toString();
     }
        
     /**
