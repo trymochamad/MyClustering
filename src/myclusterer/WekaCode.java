@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Scanner;
 import weka.clusterers.ClusterEvaluation;
 import weka.clusterers.Clusterer;
 import weka.clusterers.DensityBasedClusterer;
@@ -68,12 +69,16 @@ public class WekaCode {
             clusterer.buildClusterer(dataSet);
         }
         else if(clusterType == MyKMeans){
-            //clusterer = new MyKMeans();
-            //clusterer.buildClusterer(dataSet);
+            MyKMeans kmeans = new MyKMeans();
+            Scanner scan = new Scanner(System.in);
+            int K = scan.nextInt();
+            kmeans.setNumberOfClusters(K);
+            clusterer = kmeans;
+            clusterer.buildClusterer(dataSet);
         }
         else if(clusterType == MyAgnes){
-            
-            
+            clusterer = new MyAgnes();
+            clusterer.buildClusterer(dataSet);
         }
         return clusterer;
     }

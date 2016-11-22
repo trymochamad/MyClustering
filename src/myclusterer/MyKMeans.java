@@ -28,6 +28,7 @@ public class MyKMeans extends AbstractClusterer {
     protected Instances centroids;
     protected List<Instance>[] clusters;    
     protected int K = 3;
+    protected int iterations = 0;
     protected int maxIterations = 500;
     protected final DistanceFunction distanceFunction = new EuclideanDistance();                  
     
@@ -60,7 +61,7 @@ public class MyKMeans extends AbstractClusterer {
         for (int i = 0; i < K; ++i) tmpCluster[i] = new ArrayList<>();
         
         boolean converged = false;
-        int iterations = 0;        
+        iterations = 0;        
         while (!converged && iterations < maxIterations) {         
             ++iterations;
             converged = true;            
@@ -102,7 +103,11 @@ public class MyKMeans extends AbstractClusterer {
     public void setNumberOfClusters(int K) throws Exception {
         if (K <= 0) throw new Exception("Number of clusters must be > 0");
         this.K = K;
-    }       
+    }
+    
+    public int getIterations(){
+        return iterations;
+    }
     
     public int getMaxIterations() {
         return maxIterations;
