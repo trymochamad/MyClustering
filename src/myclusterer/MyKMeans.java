@@ -10,7 +10,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import weka.clusterers.AbstractClusterer;
+import weka.clusterers.NumberOfClustersRequestable;
+import weka.clusterers.RandomizableClusterer;
 import weka.core.Capabilities;
 import weka.core.Capabilities.Capability;
 import weka.core.DistanceFunction;
@@ -22,7 +23,8 @@ import weka.core.Instances;
  *
  * @author Visat
  */
-public class MyKMeans extends AbstractClusterer {
+public class MyKMeans extends RandomizableClusterer implements
+  NumberOfClustersRequestable {
     
     protected Instances instances;
     protected Instances centroids;
@@ -43,7 +45,7 @@ public class MyKMeans extends AbstractClusterer {
         distanceFunction.setInstances(instances);        
                  
         // assign first centroids randomly
-        Random rand = new Random();
+        Random rand = new Random();        
         Set<Integer> centroidIdx = new HashSet<>();        
         while (centroidIdx.size() < K) {
             int x = rand.nextInt(N);
@@ -68,7 +70,7 @@ public class MyKMeans extends AbstractClusterer {
 
             for (int i = 0; i < K; ++i) tmpCluster[i].clear();
             for (int i = 0; i < N; ++i) {
-                int cluster = cluster(instances.instance(i));
+                int cluster = clusterInstance(instances.instance(i));
                 if (prevCluster[i] != cluster) {
                     converged = false;
                     prevCluster[i] = cluster;
@@ -79,17 +81,15 @@ public class MyKMeans extends AbstractClusterer {
             // update centroid
             centroids = new Instances(instances, K);
             for (int i = 0; i < K; ++i) {
-                Instances tmpInstances = new Instances(instances, N);                
+                Instances members = new Instances(instances, N);                
                 for (Integer member: tmpCluster[i])
-                    tmpInstances.add(instances.instance(member));
-                double[] vals = new double[tmpCluster[i].size()];
-                for (int j = 0; j < tmpCluster[i].size(); ++j) {
-                    vals[j] = tmpInstances.meanOrMode(j);
-                }
-                centroids.add(new Instance(1.0, vals));
+                    members.add(instances.instance(member));                                
+                centroids.add(createCentroid(members));
             }
         }        
+        clusters = new List[K];
         for (int i = 0; i < K; ++i) {
+            clusters[i] = new ArrayList<>();
             for (Integer member: tmpCluster[i])
                 clusters[i].add(instances.instance(member));
         }
@@ -100,7 +100,8 @@ public class MyKMeans extends AbstractClusterer {
         return K;
     }
     
-    public void setNumberOfClusters(int K) throws Exception {
+    @Override
+    public void setNumClusters(int K) throws Exception {
         if (K <= 0) throw new Exception("Number of clusters must be > 0");
         this.K = K;
     }
@@ -119,7 +120,7 @@ public class MyKMeans extends AbstractClusterer {
     }
     
     @Override
-    public Capabilities getCapabilities() {
+    public Capabilities getCapabilities() {        
       Capabilities result = super.getCapabilities();
       result.disableAll();
       result.enable(Capability.NO_CLASS);
@@ -132,7 +133,57 @@ public class MyKMeans extends AbstractClusterer {
       return result;
     }
     
-    public int cluster(Instance instance) {
+    private Instance createCentroid(Instances members) {
+        double[] vals = new double[members.numAttributes()];
+        double[][] nominalDists = new double[members.numAttributes()][];
+        double[] weightMissing = new double[members.numAttributes()];
+        double[] weightNonMissing = new double[members.numAttributes()];
+                
+        for (int j = 0; j < members.numAttributes(); j++) {
+            if (members.attribute(j).isNominal()) {
+                nominalDists[j] = new double[members.attribute(j).numValues()];
+            }
+        }
+        for (int i = 0; i < members.numInstances(); ++i) {
+            Instance inst = members.instance(i);
+            for (int j = 0; j < members.numAttributes(); j++) {
+                if (inst.isMissing(j)) {
+                    weightMissing[j] += inst.weight(); 
+                }
+                else {
+                    weightNonMissing[j] += inst.weight();
+                    if (members.attribute(j).isNumeric())
+                        vals[j] += inst.weight() * inst.value(j);
+                    else
+                        nominalDists[j][(int)inst.value(j)] += inst.weight();                    
+                }
+            }      
+        }
+        for (int i = 0; i < members.numAttributes(); i++) {
+            if (members.attribute(i).isNumeric()) {
+                if  (weightNonMissing[i] > 0) {
+                    vals[i] /= weightNonMissing[i];
+                } else {
+                    vals[i] = Instance.missingValue();
+                }
+            }
+            else {
+                double max = -Double.MAX_VALUE;
+                double maxIndex = -1;
+                for (int j = 0; j < nominalDists[i].length; j++) {
+                    if (nominalDists[i][j] > max) {
+                        max = nominalDists[i][j];
+                        maxIndex = j;
+                    }
+                    vals[i] = max < weightMissing[i] ? Instance.missingValue() : maxIndex;                    
+                }
+            }
+        }
+        return new Instance(1.0, vals);
+    }
+             
+    @Override
+    public int clusterInstance(Instance instance) throws Exception {
         double min = Double.MAX_VALUE;
         int idx = 0;
         for (int i = 0; i < K; ++i) {
@@ -147,5 +198,5 @@ public class MyKMeans extends AbstractClusterer {
     
     public static void main(String[] args) {
         runClusterer(new MyKMeans(), args);
-    }
+    }    
 }

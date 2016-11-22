@@ -72,7 +72,7 @@ public class WekaCode {
             MyKMeans kmeans = new MyKMeans();
             Scanner scan = new Scanner(System.in);
             int K = scan.nextInt();
-            kmeans.setNumberOfClusters(K);
+            kmeans.setNumClusters(K);
             clusterer = kmeans;
             clusterer.buildClusterer(dataSet);
         }
