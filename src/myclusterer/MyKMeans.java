@@ -132,7 +132,7 @@ public class MyKMeans extends AbstractClusterer {
       return result;
     }
     
-    protected int cluster(Instance instance) {
+    public int cluster(Instance instance) {
         double min = Double.MAX_VALUE;
         int idx = 0;
         for (int i = 0; i < K; ++i) {
