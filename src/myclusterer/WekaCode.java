@@ -32,7 +32,7 @@ public class WekaCode {
     public static final int MyKMeans = 1;
     public static final int MyAgnes = 2;
     private Clusterer clusterer;
-    private ClusterEvaluation eval;
+    private static ClusterEvaluation eval;
     
     public static Instances readFileArff(String fileName) throws Exception{
         //http://weka.sourceforge.net/doc.stable/weka/core/Instances.html
@@ -40,8 +40,8 @@ public class WekaCode {
         ConverterUtils.DataSource source = new ConverterUtils.DataSource(fileName);
         Instances dataSet = source.getDataSet();
         //set atribut terakhir sebagai kelas 
-        if (dataSet.classIndex()== -1)
-             dataSet.setClassIndex(dataSet.numAttributes() - 1); //Make the last attribute be the class
+        //if (dataSet.classIndex()== -1)
+        //     dataSet.setClassIndex(dataSet.numAttributes() - 1); //Make the last attribute be the class
         return dataSet; 
     }
     
@@ -121,4 +121,7 @@ public class WekaCode {
         System.out.println("Hasil Classify Unseen Data Adalah: " + result);
     }
     
+    public static ClusterEvaluation getEval(){
+        return eval;
+    }
 }

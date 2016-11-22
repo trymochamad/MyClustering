@@ -7,6 +7,7 @@ package myclusterer;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import weka.clusterers.ClusterEvaluation;
 import weka.clusterers.Clusterer;
 import weka.core.Instances;
 
@@ -25,6 +26,7 @@ public class MyClusterer {
         String nameOfFile; 
         Clusterer clusterer; 
         Instances dataSet;
+        ClusterEvaluation eval;
         
         //Baca input file 
         Scanner scan = new Scanner(System.in); 
@@ -35,13 +37,13 @@ public class MyClusterer {
             System.out.println(dataSet.firstInstance());
             
             //Build Clusterer
-            System.out.println("Tuliskan model classifier : 0.SimpleKMeans / 1.MyKMeans / 2.MyAgnes ");
+            System.out.println("Tuliskan model clusterer : 0.SimpleKMeans / 1.MyKMeans / 2.MyAgnes ");
             int clustererType = scan.nextInt();
             clusterer = WekaCode.buildClusterer(dataSet, clustererType);
-            System.out.println(clusterer.getClass());
-            System.out.println("-----");
-            System.out.println();
-            System.out.println("Number of iterations: "+);
+            eval = new ClusterEvaluation();
+            eval.setClusterer(clusterer);
+            eval.evaluateClusterer(dataSet);
+            System.out.println("Cluster Evaluation: "+eval.clusterResultsToString());
             
             //Given test set 
         } catch (Exception ex) {

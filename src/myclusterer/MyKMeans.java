@@ -79,7 +79,7 @@ public class MyKMeans extends AbstractClusterer {
             // update centroid
             centroids = new Instances(instances, K);
             for (int i = 0; i < K; ++i) {
-                Instances tmpInstances = new Instances(instances, 0);                
+                Instances tmpInstances = new Instances(instances, N);                
                 for (Integer member: tmpCluster[i])
                     tmpInstances.add(instances.instance(member));
                 double[] vals = new double[tmpCluster[i].size()];
@@ -143,7 +143,7 @@ public class MyKMeans extends AbstractClusterer {
             }
         }
         return idx;
-    }      
+    }    
     
     public static void main(String[] args) {
         runClusterer(new MyKMeans(), args);
