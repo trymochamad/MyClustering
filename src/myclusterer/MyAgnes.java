@@ -24,7 +24,7 @@ import weka.core.Instances;
 public class MyAgnes extends AbstractClusterer implements NumberOfClustersRequestable {
     
     public class Cluster {
-        final private List<Instance> members;
+        final private List<Integer> members;
         private Cluster left, right;
         
         public Cluster() {
@@ -38,18 +38,18 @@ public class MyAgnes extends AbstractClusterer implements NumberOfClustersReques
             members.addAll(left.members);
             members.addAll(right.members);
         }
-        public Cluster(Instance member) {
+        public Cluster(Integer member) {
             members = new ArrayList<>();
             members.add(member);
             left = right = null;
         }
-        public Cluster(List<Instance> members) {
+        public Cluster(List<Integer> members) {
             this.members = new ArrayList<>(members);
         }
         public Cluster(Cluster other) {
             this.members = new ArrayList<>(other.members);
         }        
-        public void add(Instance instance) { members.add(instance); }
+        public void add(Integer member) { members.add(member); }
         public void add(Cluster other) { members.addAll(other.members); }        
         
         public Cluster getLeft() { return this.left; }
@@ -59,7 +59,7 @@ public class MyAgnes extends AbstractClusterer implements NumberOfClustersReques
         public void setRight(Cluster right) { this.right = right; }
         
         public int size() { return members.size(); }
-        public Instance get(int index) { return members.get(index); }
+        public Integer get(int index) { return members.get(index); }
     }       
     
     public enum Linkage {
@@ -117,20 +117,10 @@ public class MyAgnes extends AbstractClusterer implements NumberOfClustersReques
     
     private void joinNeighbors() {
         int n = instances.numInstances();
-        double[][] distances = new double[n][n];
-        for (int i = 0; i < n; ++i) {
-            distances[i][i] = 0;
-            for (int j = i+1; j < n; ++j) {                                        
-                double distance = distanceFunction.distance(
-                        instances.instance(i),
-                        instances.instance(j));
-                distances[i][j] = distances[j][i] = distance;
-            }
-        }   
         
         clusters = new ArrayList<>();
         for (int i = 0; i < n; ++i) {
-            Cluster cluster = new Cluster(instances.instance(i));
+            Cluster cluster = new Cluster(i);
             clusters.add(cluster);
         }
         
@@ -145,7 +135,6 @@ public class MyAgnes extends AbstractClusterer implements NumberOfClustersReques
                             clusters.get(i),
                             clusters.get(j),
                             linkage);
-//                    System.out.println(distance);
                     if (distance < min) {
                         min = distance;
                         firstIdx = i;
@@ -165,28 +154,34 @@ public class MyAgnes extends AbstractClusterer implements NumberOfClustersReques
         double min = Double.MAX_VALUE, max = -Double.MAX_VALUE;
         for (int i = 0; i < first.size(); ++i) {
             for (int j = 0; j < second.size(); ++j) {
-                double distance = distanceFunction.distance(first.get(i), second.get(j));
+                double distance = distanceFunction.distance(
+                        instances.instance(first.get(i)), 
+                        instances.instance(second.get(j)));
                 if (distance < min) min = distance;
                 if (distance > max) max = distance;
             }
         }
         return linkage == Linkage.SINGLE ? min : max;
-    }
+    }    
     
     @Override
     public int clusterInstance(Instance instance) throws Exception {
-        Cluster cluster = new Cluster(instance);
         double min = Double.MAX_VALUE;
-        int idx = 0;
-        for (int i = 0; i < clusters.size(); ++i) {            
-            double distance = clusterDistance(clusters.get(i), cluster, linkage);
-            if (distance <= min) {
-                min = distance;
-                idx = i;                                
-            }
-        }
+        int idx = 0;        
+        for (int i = 0; i < clusters.size(); ++i) {
+            Cluster cluster = clusters.get(i);                        
+            for (int j = 0; j < cluster.size(); ++j) {
+                double distance = distanceFunction.distance(
+                        instance,
+                        instances.instance(cluster.get(j)));
+                if (distance < min) {
+                    min = distance;
+                    idx = i;
+                }                
+            }                       
+        }        
         return idx;
-    }       
+    }
        
     /**
      * @param args the command line arguments
