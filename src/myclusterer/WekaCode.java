@@ -92,7 +92,6 @@ public class WekaCode {
             kmeans.setNumClusters(K);
             clusterer = kmeans;
             clusterer.buildClusterer(dataSet);
-            System.out.println("Jumlah iterasi: "+ kmeans.getIterations());
         }
         else if(clusterType == MyAgnes){
             MyAgnes agnes = new MyAgnes();

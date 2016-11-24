@@ -30,11 +30,11 @@ public class MyClusterer {
         
         //Baca input file 
         Scanner scan = new Scanner(System.in); 
+        System.out.print("Masukkan nama file untuk di-cluster: ");
         nameOfFile= scan.nextLine(); 
         try {
             //Baca File arff
             dataSet = WekaCode.readFileArff(nameOfFile);
-            System.out.println(dataSet.firstInstance());
             
             //Build Clusterer
             System.out.println("Tuliskan model clusterer : 0.SimpleKMeans / 1.HierarchicalClusterer / 2.MyKMeans / 3.MyAgnes ");
