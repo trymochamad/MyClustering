@@ -30,7 +30,7 @@ public class MyKMeans extends RandomizableClusterer implements
     protected Instances centroids;
     protected List<Instance>[] clusters;    
     protected int K = 3;
-    protected int iterations = 0;
+    protected int iterations;
     protected int maxIterations = 500;
     protected final DistanceFunction distanceFunction = new EuclideanDistance();                  
     

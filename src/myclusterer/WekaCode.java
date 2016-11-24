@@ -14,6 +14,7 @@ import weka.clusterers.ClusterEvaluation;
 import weka.clusterers.Clusterer;
 import weka.clusterers.DensityBasedClusterer;
 import weka.clusterers.SimpleKMeans;
+import weka.clusterers.HierarchicalClusterer;
 import weka.core.Instances;
 import weka.core.Attribute;
 import weka.core.Instance;
@@ -29,8 +30,9 @@ import weka.filters.unsupervised.attribute.Remove;
 public class WekaCode {
     
     public static final int SimpleKMeans = 0;
-    public static final int MyKMeans = 1;
-    public static final int MyAgnes = 2;
+    public static final int HierarchicalClusterer = 1;
+    public static final int MyKMeans = 2;
+    public static final int MyAgnes = 3;
     private Clusterer clusterer;
     private static ClusterEvaluation eval;
     
@@ -65,19 +67,40 @@ public class WekaCode {
     public static Clusterer buildClusterer(Instances dataSet, int clusterType) throws Exception{
         Clusterer clusterer = null;
         if (clusterType == SimpleKMeans){
-            clusterer = (SimpleKMeans) new SimpleKMeans();
-            clusterer.buildClusterer(dataSet);
-        }
-        else if(clusterType == MyKMeans){
-            MyKMeans kmeans = new MyKMeans();
+            SimpleKMeans kmeans = new SimpleKMeans();
             Scanner scan = new Scanner(System.in);
+            System.out.print("Masukkan jumlah cluster: ");
             int K = scan.nextInt();
             kmeans.setNumClusters(K);
             clusterer = kmeans;
             clusterer.buildClusterer(dataSet);
         }
+        else if(clusterType == HierarchicalClusterer){
+            HierarchicalClusterer hierarchical = new HierarchicalClusterer();
+            Scanner scan = new Scanner(System.in);
+            System.out.print("Masukkan jumlah cluster: ");
+            int K = scan.nextInt();
+            hierarchical.setNumClusters(K);
+            clusterer = hierarchical;
+            clusterer.buildClusterer(dataSet);
+        }
+        else if(clusterType == MyKMeans){
+            MyKMeans kmeans = new MyKMeans();
+            Scanner scan = new Scanner(System.in);
+            System.out.print("Masukkan jumlah cluster: ");
+            int K = scan.nextInt();
+            kmeans.setNumClusters(K);
+            clusterer = kmeans;
+            clusterer.buildClusterer(dataSet);
+            System.out.println("Jumlah iterasi: "+ kmeans.getIterations());
+        }
         else if(clusterType == MyAgnes){
-            clusterer = new MyAgnes();
+            MyAgnes agnes = new MyAgnes();
+            Scanner scan = new Scanner(System.in);
+            System.out.print("Masukkan jumlah cluster: ");
+            int K = scan.nextInt();
+            agnes.setNumClusters(K);
+            clusterer = agnes;
             clusterer.buildClusterer(dataSet);
         }
         return clusterer;

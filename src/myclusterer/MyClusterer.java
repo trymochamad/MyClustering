@@ -37,7 +37,7 @@ public class MyClusterer {
             System.out.println(dataSet.firstInstance());
             
             //Build Clusterer
-            System.out.println("Tuliskan model clusterer : 0.SimpleKMeans / 1.MyKMeans / 2.MyAgnes ");
+            System.out.println("Tuliskan model clusterer : 0.SimpleKMeans / 1.HierarchicalClusterer / 2.MyKMeans / 3.MyAgnes ");
             int clustererType = scan.nextInt();
             clusterer = WekaCode.buildClusterer(dataSet, clustererType);
             eval = new ClusterEvaluation();
